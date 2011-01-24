@@ -1,0 +1,9 @@
+#!/usr/bin/env php -f
+
+define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
+
+//set include path
+
+//init parser
+
+//parse
