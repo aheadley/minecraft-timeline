@@ -1,0 +1,7 @@
+Tools to create an event timeline from the Minecraft server logs using
+SIMILE Timeline: http://www.simile-widgets.org/timeline/
+
+Requires:
+    PEAR
+        Console_Commandline
+    ZendFramework
