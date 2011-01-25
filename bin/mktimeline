@@ -11,18 +11,64 @@ $autoloader->setFallbackAutoloader( true );
 
 //init cli
 $cliParser = new Console_CommandLine();
+$cliParser->addOption( 'output', array(
+  'short_name'      => '-o',
+  'long_name'       => '--output',
+  'description'     => 'Parsed events output file',
+  'action'          => 'StoreString',
+  'default'         => 'events.xml',
+  'help_name'       => 'FILE',
+) );
+$cliParser->addOption( 'output_format', array(
+  'long_name'       => '--output-format',
+  'description'     => 'Parsed events output format',
+  'action'          => 'StoreString',
+  'choices'         => array( 'xml', 'json' ),
+  'default'         => 'xml',
+  'add_list_option' => true,
+  'help_name'       => 'FORMAT',
+) );
+$cliParser->addOption( 'source_format', array(
+  'long_name'       => '--source-format',
+  'description'     => 'Event source format',
+  'action'          => 'StoreString',
+  'choices'         => array( 'file', 'db' ),
+  'default'         => 'file',
+  'add_list_option' => true,
+  'help_name'       => 'FORMAT',
+) );
+$cliParser->addArgument( 'source', array(
+  'description'     => 'Log file source',
+  'help_name'       => 'SOURCE'
+) );
 
-/* temp testing vars */
-$logfile = 'server.log';
-$timeline = new Timeline();
-$xmlfile = 'parsed.xml';
-//*********************
+try {
+  $result = $cliParser->parse();
+} catch( Exception $e ) {
+  $cliParser->displayError( $e->getMessage() );
+}
 
 date_default_timezone_set( 'America/Detroit' );
 require_once( 'Minecraft/Events.php' );
-$logParser = new Minecraft_Parser_Timeline(
-  new Minecraft_Log_File( $logfile ), $timeline );
 
+switch( $result->options['source_format'] ) {
+  case 'file':
+    $source = new Minecraft_Log_File( $result->args['source'] );
+    break;
+  case 'db':
+    throw new Exception( 'DB source not yet implemented' );
+    break;
+}
+
+$timeline = new Timeline();
+$logParser = new Minecraft_Parser_Timeline( $source, $timeline );
 $logParser->parse();
 
-file_put_contents( $xmlfile, $timeline->toXml( null ) );
+switch( $result->options['output_format'] ) {
+  case 'xml':
+    file_put_contents( $result->options['output'], $timeline->toXml( null ) );
+    break;
+  case 'json':
+    file_put_contents( $result->options['output'], $timeline->toJson() );
+    break;
+}

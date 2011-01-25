@@ -33,6 +33,7 @@ class Minecraft_Parser_Timeline
           $this->_timeline->addEvent( new Timeline_Event( $parsedLine['player_name'],
             $this->_parseTimestamp( $this->_loginTracking[$parsedLine['player_name']] ),
             $this->_parseTimestamp( $parsedLine['timestamp'] ) ) );
+          unset( $this->_loginTracking[$parsedLine['player_name']] );
         } else {
           $this->_loginTracking[$parsedLine['player_name']] = $parsedLine['timestamp'];
         }
