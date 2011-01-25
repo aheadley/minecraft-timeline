@@ -1,8 +1,16 @@
 #!/usr/bin/env php -f
 <?php
-define('ROOT_DIR', dirname(dirname(__FILE__)));
+define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 
-//set include path
-//init zend autoloader
+ini_set( 'include_path',
+         ini_get( 'include_path' ) . ':' . ROOT_DIR . DIRECTORY_SEPARATOR . 'include' );
+
+require_once( 'Zend/Loader/Autoloader.php' );
+$autoloader = Zend_Loader_Autoloader::getInstance();
+$autoloader->setFallbackAutoloader( true );
+
+//init cli
+$cliParser = Console_CommandLine();
+
 //init parser
 //parse

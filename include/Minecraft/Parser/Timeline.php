@@ -12,7 +12,7 @@ class Minecraft_Parser_Timeline
     $this->_timeline = $timeline;
   }
 
-  public function  parse() {
+  public function parse() {
     parent::parse();
     $this->_flushLogins();
   }
