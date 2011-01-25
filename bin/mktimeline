@@ -1,4 +1,4 @@
-#!/usr/bin/env php -f
+#!/usr/bin/env php
 <?php
 define( 'ROOT_DIR', dirname( dirname( __FILE__ ) ) );
 
@@ -10,7 +10,19 @@ $autoloader = Zend_Loader_Autoloader::getInstance();
 $autoloader->setFallbackAutoloader( true );
 
 //init cli
-$cliParser = Console_CommandLine();
+$cliParser = new Console_CommandLine();
 
-//init parser
-//parse
+/* temp testing vars */
+$logfile = 'server.log';
+$timeline = new Timeline();
+$xmlfile = 'parsed.xml';
+//*********************
+
+date_default_timezone_set( 'America/Detroit' );
+require_once( 'Minecraft/Events.php' );
+$logParser = new Minecraft_Parser_Timeline(
+  new Minecraft_Log_File( $logfile ), $timeline );
+
+$logParser->parse();
+
+file_put_contents( $xmlfile, $timeline->toXml( null ) );

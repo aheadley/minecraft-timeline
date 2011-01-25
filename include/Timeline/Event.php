@@ -13,11 +13,10 @@ class Timeline_Event {
 
   protected $_extraOptions    = array();
 
-  public function __construct( DateTime $start, DateTime $end = null,
-                                $title = null ) {
+  public function __construct( $title, DateTime $start, DateTime $end = null ) {
+    $this->_title = $title;
     $this->_start = $start;
     $this->_end = $end;
-    $this->_title = ( is_null( $title ) ? '' : $title );
     $this->_durationEvent = !is_null( $this->_end );
   }
 
@@ -33,8 +32,20 @@ class Timeline_Event {
     $this->_extraOptions[$option] = $value;
   }
 
-  public function toXml() {
-
+  public function toXml( &$parentNode ) {
+    $node = $parentNode->createElement( 'event' );
+    $node->setAttribute( 'title', $this->_title );
+    $node->setAttribute( 'start', $this->_start->format( self::FORMAT_STRING ) );
+    if( !is_null( $this->_end ) ) {
+      $node->setAttribute( 'end', $this->_end->format( self::FORMAT_STRING ) );
+      $node->setAttribute( 'durationEvent', 'true' );
+    } else {
+      $node->setAttribute( 'durationEvent', 'false' );
+    }
+    foreach( $this->_extraOptions as $option => $value ) {
+      $node->setAttribute( $option, $value );
+    }
+    return $node;
   }
 
   public function toJson() {
