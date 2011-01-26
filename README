@@ -1,7 +1,23 @@
 Tools to create an event timeline from the Minecraft server logs using
 SIMILE Timeline: http://www.simile-widgets.org/timeline/
 
+Usage:
+  bin/mktimeline [options] <SOURCE>
+
+Options:
+  -o FILE, --output=FILE  Parsed events output file
+  --output-format=FORMAT  Parsed events output format
+  --list-output_format    lists valid choices for option output_format
+  --source-format=FORMAT  Event source format
+  --list-source_format    lists valid choices for option source_format
+  -h, --help              show this help message and exit
+
+Arguments:
+  SOURCE  Log file source
+
 Requires:
+    PHP 5.3+
     PEAR
         Console_Commandline
     ZendFramework
+
