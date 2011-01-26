@@ -2,6 +2,8 @@
 
 class Minecraft_Parser_Timeline
   extends Minecraft_Parser {
+
+  const MIN_PLAYER_ONLINE_SECS    = 300;
   
   protected $_timeline = null;
   protected $_loginTracking = array();
@@ -30,9 +32,14 @@ class Minecraft_Parser_Timeline
       case 'player_logout':
         if( isset( $this->_loginTracking[$parsedLine['player_name']] ) ) {
           //normal logout
-          $this->_timeline->addEvent( new Timeline_Event( $parsedLine['player_name'],
-            $this->_parseTimestamp( $this->_loginTracking[$parsedLine['player_name']] ),
-            $this->_parseTimestamp( $parsedLine['timestamp'] ) ) );
+          if( $this->_parseTimestamp( $parsedLine['timestamp'] )->getTimestamp() -
+                $this->_parseTimestamp( $this->_loginTracking[$parsedLine['player_name']] )
+                  ->getTimestamp()
+              > self::MIN_PLAYER_ONLINE_SECS ) {
+            $this->_timeline->addEvent( new Timeline_Event( $parsedLine['player_name'],
+              $this->_parseTimestamp( $this->_loginTracking[$parsedLine['player_name']] ),
+              $this->_parseTimestamp( $parsedLine['timestamp'] ) ) );
+          }
           unset( $this->_loginTracking[$parsedLine['player_name']] );
         } else {
           $this->_loginTracking[$parsedLine['player_name']] = $parsedLine['timestamp'];
@@ -41,7 +48,7 @@ class Minecraft_Parser_Timeline
       case 'server_stop':
         if( is_null( $this->_serverTracking ) ) {
           //normal server shutdown
-          $this->_flushLogins();
+          $this->_flushLogins( $this->_parseTimestamp( $parsedLine['timestamp'] ) );
           $this->_serverTracking = $this->_parseTimestamp( $parsedLine['timestamp'] );
         } else {
           //this should never happen
@@ -51,16 +58,11 @@ class Minecraft_Parser_Timeline
       case 'server_start':
         if( is_null( $this->_serverTracking ) ) {
           //was hard crash
-          $this->_flushLogins();
-          $this->_timeline->addEvent( new Timeline_Event( 'Server restart',
-                                      $this->_parseTimestamp( $parsedLine['timestamp'] ) ) );
-        } else {
-          //soft crash or graceful restart
-          $this->_timeline->addEvent( new Timeline_Event( 'Server restart',
-                                      $this->_serverTracking,
-                                      $this->_parseTimestamp( $parsedLine['timestamp'] ) ) );
-          $this->_serverTracking = null;
+          $this->_flushLogins( $this->_parseTimestamp( $parsedLine['timestamp'] ) );
         }
+        $this->_timeline->addEvent( new Timeline_Event( 'SERVER RESTART',
+                                    $this->_parseTimestamp( $parsedLine['timestamp'] ) ) );
+        $this->_serverTracking = null;
         break;
       default:
         //some event we don't care about
@@ -68,12 +70,14 @@ class Minecraft_Parser_Timeline
     }
   }
 
-  private function _flushLogins() {
-    $logout = new DateTime( 'now' );
+  private function _flushLogins( DateTime $end = null ) {
+    if( is_null( $end ) ) {
+      $end = new DateTime( 'now' );
+    }
     foreach( $this->_loginTracking as $player => $login ) {
       $this->_timeline->addEvent( new Timeline_Event( $player,
                                   $this->_parseTimestamp( $login ),
-                                  $logout ) );
+                                  $end ) );
     }
     $this->_loginTracking = array();
   }
